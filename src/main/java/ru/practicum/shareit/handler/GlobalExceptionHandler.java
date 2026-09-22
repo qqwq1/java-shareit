@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
         return List.of(new ErrorResponse(ex.getField(), ex.getRejectedValue(), ex.getMessage()));
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ValidationException.class)
     public List<ErrorResponse> handleValidationException(ValidationException ex) {
         log.error("Ошибка при поиске по id: {}", ex.getMessage());
