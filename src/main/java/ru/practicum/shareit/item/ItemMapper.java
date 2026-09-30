@@ -2,21 +2,41 @@ package ru.practicum.shareit.item;
 
 
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.util.CopyUtil;
+import ru.practicum.shareit.item.entity.Item;
 
 
-public class ItemMapper {
+public final class ItemMapper {
+    private ItemMapper() {
+    }
+
     public static ItemDto toDto(Item item) {
         ItemDto itemDto = new ItemDto();
-        CopyUtil.copyNonNullProperties(item, itemDto);
+        itemDto.setId(item.getId());
+        itemDto.setName(item.getName());
+        itemDto.setDescription(item.getDescription());
+        itemDto.setAvailable(item.getAvailable());
+        itemDto.setComments(item.getComments().stream().map(CommentMapper::toDto).toList());
         return itemDto;
     }
 
-    public static Item toModel(ItemDto itemDto) {
+    public static Item toEntity(ItemDto itemDto) {
         Item item = new Item();
-        CopyUtil.copyNonNullProperties(itemDto, item);
+        item.setId(itemDto.getId());
+        item.setName(itemDto.getName());
+        item.setDescription(itemDto.getDescription());
+        item.setAvailable(itemDto.getAvailable());
         return item;
     }
 
+    public static void updateEntity(ItemDto itemDto, Item item) {
+        if (itemDto.getName() != null) {
+            item.setName(itemDto.getName());
+        }
+        if (itemDto.getDescription() != null) {
+            item.setDescription(itemDto.getDescription());
+        }
+        if (itemDto.getAvailable() != null) {
+            item.setAvailable(itemDto.getAvailable());
+        }
+    }
 }

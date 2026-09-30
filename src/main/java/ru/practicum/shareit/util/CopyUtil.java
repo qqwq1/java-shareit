@@ -16,7 +16,10 @@ public final class CopyUtil {
 
     public static void copyNonNullProperties(Object source, Object target) {
         if (source == null) {
-            throw new ValidationException("Объект источника не может быть null", target, "request object");
+            throw new ValidationException("Объект источника не может быть null", "null", "request object");
+        }
+        if (target == null) {
+            throw new ValidationException("Объект цель не может быть null", "null", "request object");
         }
         String[] nullFieldsNames = getNullFieldsNames(source);
         BeanUtils.copyProperties(source, target, nullFieldsNames);

@@ -4,7 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.DuplicateException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.util.CopyUtil;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.entity.User;
 
 import java.util.List;
 
@@ -24,19 +25,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User saveUser(User user) {
-        if (isDuplicateEmail(user))
-            throw new DuplicateException("Пользователь с таким Email уже существует", user.getEmail(), "email");
-        return repository.save(user);
+    public User saveUser(UserDto userDto) {
+        if (isDuplicateEmail(userDto))
+            throw new DuplicateException("Пользователь с таким Email уже существует", userDto.getEmail(), "email");
+        return repository.save(UserMapper.toEntity(userDto));
     }
 
     @Override
-    public User updateUser(User updatedUser, Long userId) {
-        updatedUser.setId(userId);
+    public User updateUser(UserDto updatedUserDto, Long userId) {
+        updatedUserDto.setId(userId);
         User oldUser = getOrElseThrow(userId);
-        if (isDuplicateEmail(updatedUser))
-            throw new DuplicateException("Пользователь с таким Email уже существует", updatedUser.getEmail(), "email");
-        CopyUtil.copyNonNullProperties(updatedUser, oldUser);
+        if (isDuplicateEmail(updatedUserDto))
+            throw new DuplicateException("Пользователь с таким Email уже существует", updatedUserDto.getEmail(), "email");
+        UserMapper.updateEntity(updatedUserDto, oldUser);
+        repository.save(oldUser);
         return oldUser;
     }
 
@@ -46,9 +48,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User deleteUser(Long userId) {
-        return repository.delete(userId).orElseThrow(
+    public void deleteUser(Long userId) {
+        User user = repository.findById(userId).orElseThrow(
                 () -> new NotFoundException("Не найден пользователь с id=" + userId, userId.toString(), "id"));
+        repository.deleteById(user.getId());
     }
 
     private User getOrElseThrow(Long id) {
@@ -56,10 +59,7 @@ public class UserServiceImpl implements UserService {
                 () -> new NotFoundException("Не найден пользователь с id=" + id, id.toString(), "id"));
     }
 
-    private boolean isDuplicateEmail(User user) {
-        return repository.findAll().stream()
-                .map(User::getEmail)
-                .anyMatch(email -> email.equalsIgnoreCase(user.getEmail()));
+    private boolean isDuplicateEmail(UserDto userDto) {
+        return repository.existsByEmailIgnoreCase(userDto.getEmail());
     }
-
 }

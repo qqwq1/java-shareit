@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.validation.Create;
 import ru.practicum.shareit.validation.Update;
 
@@ -16,24 +17,25 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<User> getUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(userService.getUser(userId));
+    public ResponseEntity<UserDto> getUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(UserMapper.toDto(userService.getUser(userId)));
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@Validated(Create.class) @RequestBody User user) {
+    public ResponseEntity<UserDto> createUser(@Validated(Create.class) @RequestBody UserDto userDto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userService.saveUser(user));
+                .body(UserMapper.toDto(userService.saveUser(userDto)));
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<User> updateUser(@PathVariable Long userId,
-                                           @Validated(Update.class) @RequestBody User updatedUser) {
-        return ResponseEntity.ok(userService.updateUser(updatedUser, userId));
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long userId,
+                                              @Validated(Update.class) @RequestBody UserDto updatedUser) {
+        return ResponseEntity.ok(UserMapper.toDto(userService.updateUser(updatedUser, userId)));
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<User> deleteUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(userService.deleteUser(userId));
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        userService.deleteUser(userId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
