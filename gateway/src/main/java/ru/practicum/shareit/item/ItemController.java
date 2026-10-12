@@ -30,7 +30,7 @@ public class ItemController {
 
     @GetMapping("/search")
     public ResponseEntity<Object> searchAllAvailableByNameAndDescription(@RequestParam Map<String, Object> params,
-                                                                          @RequestHeader("X-Sharer-User-Id") Long userId) {
+                                                                         @RequestHeader("X-Sharer-User-Id") Long userId) {
         return client.getAllAvailableByNameAndDescription(userId, params);
     }
 
