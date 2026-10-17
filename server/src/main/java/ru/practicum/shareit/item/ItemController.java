@@ -1,0 +1,68 @@
+package ru.practicum.shareit.item;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentRequestDto;
+import ru.practicum.shareit.item.dto.CommentResponseDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Locale;
+
+
+@RestController
+@RequestMapping("/items")
+@RequiredArgsConstructor
+class ItemController {
+    private final ItemService itemService;
+
+    @GetMapping("/{itemId}")
+    public ItemDto get(@PathVariable Long itemId, @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return ItemMapper.toDto(itemService.getItemById(itemId, userId));
+    }
+
+    @GetMapping()
+    public Collection<ItemDto> getAllItemsFromUser(@RequestHeader(name = "X-Sharer-User-Id") Long userId) {
+        return itemService.getAllItemsFromUser(userId);
+    }
+
+    @GetMapping("/search")
+    public Collection<ItemDto> searchAllAvailableByNameAndDescription(@RequestParam String text,
+                                                                      @RequestHeader("X-Sharer-User-Id") Long userId) {
+        if (text.isBlank()) {
+            return new ArrayList<>();
+        }
+        return itemService.getAllAvailableByNameAndDescription(text.toLowerCase(Locale.ROOT)).stream()
+                .map(ItemMapper::toDto)
+                .toList();
+    }
+
+    @PostMapping
+    public ItemDto addNewItem(@RequestHeader("X-Sharer-User-Id") Long ownerId,
+                              @RequestBody ItemDto itemDto) {
+        return ItemMapper.toDto(itemService.addNewItem(ownerId, itemDto));
+    }
+
+    @PostMapping("/{itemId}/comment")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommentResponseDto comment(@RequestBody CommentRequestDto commentRequestDto,
+                                      @RequestHeader("X-Sharer-User-Id") Long userId,
+                                      @PathVariable Long itemId) {
+        return CommentMapper.toDto(itemService.commentItem(commentRequestDto, userId, itemId));
+    }
+
+    @PatchMapping("/{itemId}")
+    public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") Long ownerId,
+                              @RequestBody ItemDto itemDto,
+                              @PathVariable Long itemId) {
+        return ItemMapper.toDto(itemService.updateItem(ownerId, itemDto, itemId));
+    }
+
+    @DeleteMapping("/{itemId}")
+    public void deleteItem(@RequestHeader("X-Sharer-User-Id") long userId,
+                           @PathVariable(name = "itemId") long itemId) {
+        itemService.deleteItem(userId, itemId);
+    }
+}
